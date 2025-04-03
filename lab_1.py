@@ -1,3 +1,11 @@
+"""
+Note: Our completed code at the end of Wednesday OH with JC was overwritten 
+in the midst of figuring out how to SSH into the Raspberry Pi with Github,
+so the following code is a brief un-tested, re-writing of the code. We talked to JC,
+who said that since we had already completed the code in OH and had shown
+it worked, we would receive credit for the code.
+"""
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -5,16 +13,19 @@ from std_msgs.msg import Float64MultiArray
 import numpy as np
 import time
 from collections import deque
+import math
 
 JOINT_NAME = 'leg_front_r_1'
 ####
 ####
-KP = 0 # YOUR KP VALUE
-KD = 0 # YOUR KD VALUE
+KP = 2 # YOUR KP VALUE
+KD = 0.15 # YOUR KD VALUE
 ####
 ####
 LOOP_RATE = 200  # Hz
 MAX_TORQUE = 3.0
+####
+####
 
 class JointStateSubscriber(Node):
 
@@ -43,22 +54,41 @@ class JointStateSubscriber(Node):
         self.target_joint_vel = 0
         # self.torque_history = deque(maxlen=DELAY)
 
+        # Initialization for delays
+        delay_seconds = 1
+        control_frequency = 1
+        self.delay_buffer_size = int(delay_seconds * control_frequency)
+        self.angle_buffer = deque(maxlen=self.delay_buffer_size)
+        self.velocity_buffer = deque(maxlen=self.delay_buffer_size)
+
         # Create a timer to run pd_loop at the specified frequency
         self.create_timer(1.0 / LOOP_RATE, self.pd_loop)
 
     def get_target_joint_info(self):
-        ####
-        #### YOUR CODE HERE
-        ####
+        current_time = time.time()
+        joint_pos_desired = math.sin(current_time)
 
-        # target_joint_pos, target_joint_vel
-        return 0, 0 
+        # return 0, 0 
+        # return self.target_joint_pos, self.target_joint_vel
+        return joint_pos_desired, self.target_joint_vel
 
-    def calculate_pd_torque(self, joint_pos, joint_vel, target_joint_pos, target_joint_vel):
-        ####
-        #### YOUR CODE HERE
-        ####
-        return 0
+    def calculate_pd_torque(self, joint_pos, joint_vel, target_joint_pos, target_joint_vel):    
+        # Bang Bang control:
+        # if target_joint_pos < joint_pos:
+        #     return MAX_TORQUE
+        # return -MAX_TORQUE
+
+        # P Control:
+        #return KP * (target_joint_pos - joint_pos) 
+
+        # Adding delays in system by buffering current motor angle and velocity readings
+        self.angle_buffer.append(joint_pos)
+        self.velocity_buffer.append(joint_vel)
+        joint_pos = self.angle_buffer[0]
+        joint_vel = self.velocity_buffer[0]
+
+        # PD Control:
+        return KP * (target_joint_pos - joint_pos) + KD (target_joint_vel - joint_vel) + 0
 
     def print_info(self):
         if self.print_counter == 0:
