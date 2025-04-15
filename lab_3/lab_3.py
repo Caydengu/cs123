@@ -102,11 +102,11 @@ class InverseKinematics(Node):
 
 
         # T_1_2 (leg_front_r_1 to leg_front_r_2)
-        T_1_2 = translation(0, 0, 0.039) @ rotation_y(-1.57080) @ rotation_z(theta2 - theta1)
+        T_1_2 = translation(0, 0, 0.039) @ rotation_y(-1.57080) @ rotation_z(theta2)
 
 
         # T_2_3 (leg_front_r_2 to leg_front_r_3)
-        T_2_3 = translation(0, -0.0494, 0.0685) @ rotation_y(1.57080) @ rotation_z(theta3 - theta2)
+        T_2_3 = translation(0, -0.0494, 0.0685) @ rotation_y(1.57080) @ rotation_z(theta3)
 
 
         # T_3_ee (leg_front_r_3 to end-effector)
