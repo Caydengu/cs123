@@ -194,16 +194,31 @@ class InverseKinematics(Node):
         ################################################################################################
         # TODO: Implement the interpolation function
         ################################################################################################
-        ee_triangle_positions = self.ee_triangle_positions
-        p1 = ee_triangle_positions[0]
-        p2 = ee_triangle_positions[1]
-        p3 = ee_triangle_positions[2]
-        t = t % 1   # Make sure t is between 0 and 1
-        path = np.array([p1, p2, p3])
-        xp = np.array(0.0, 1/3, 2/3, 1.0)
-        interpolated = np.array([np.interp(t, xp, path[:, dim]) for dim in range(path.shape[1])])
-        return interpolated
+        # ee_triangle_positions = self.ee_triangle_positions
+        # p1 = ee_triangle_positions[0]
+        # p2 = ee_triangle_positions[1]
+        # p3 = ee_triangle_positions[2]
+        # t = t % 1   # Make sure t is between 0 and 1
+        # path = np.array([p1, p2, p3])
+        # xp = np.array(0.0, 1/3, 2/3, 1.0)
+        # interpolated = np.array([np.interp(t, xp, path[:, dim]) for dim in range(path.shape[1])])
 
+        t = t % 3
+
+        if 0 <= t and t < 1:
+            p1 = self.ee_triangle_positions[0]
+            p2 = self.ee_triangle_positions[1]
+
+        elif 1 <= t and t < 2:
+            p1 = self.ee_triangle_positions[1]
+            p2 = self.ee_triangle_positions[2]
+
+        else:
+            p1 = self.ee_triangle_positions[2]
+            p2 = self.ee_triangle_positions[0]
+
+        percent_t = t % 1
+        return p1 + percent_t * (p2 - p1)
 
     def ik_timer_callback(self):
         if self.joint_positions is not None:
