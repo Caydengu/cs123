@@ -5,13 +5,10 @@ from std_msgs.msg import Float64MultiArray
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
-
 Kp = 3
 Kd = 0.1
 
-
 class InverseKinematics(Node):
-
 
     def __init__(self):
         super().__init__('inverse_kinematics')
@@ -29,24 +26,20 @@ class InverseKinematics(Node):
             10
         )
 
-
         self.pd_timer_period = 1.0 / 200  # 200 Hz
         self.ik_timer_period = 1.0 / 20   # 10 Hz
         self.pd_timer = self.create_timer(self.pd_timer_period, self.pd_timer_callback)
         self.ik_timer = self.create_timer(self.ik_timer_period, self.ik_timer_callback)
 
-
         self.joint_positions = None
         self.joint_velocities = None
         self.target_joint_positions = None
-
 
         self.ee_triangle_positions = np.array([
             [0.05, 0.0, -0.12],  # Touchdown
             [-0.05, 0.0, -0.12], # Liftoff
             [0.0, 0.0, -0.06]    # Mid-swing
         ])
-
 
         center_to_rf_hip = np.array([0.07500, -0.08350, 0])
         self.ee_triangle_positions = self.ee_triangle_positions + center_to_rf_hip
@@ -59,12 +52,6 @@ class InverseKinematics(Node):
         self.joint_positions = np.array([msg.position[msg.name.index(joint)] for joint in joints_of_interest])
         self.joint_velocities = np.array([msg.velocity[msg.name.index(joint)] for joint in joints_of_interest])
 
-
-    # def forward_kinematics(self, theta1, theta2, theta3):
-    #     ################################################################################################
-    #     # TODO: paste lab 2 forward kinematics here
-    #     ################################################################################################
-    #     return
    
     def forward_kinematics(self, theta1, theta2, theta3):
         def rotation_x(angle):
@@ -100,22 +87,17 @@ class InverseKinematics(Node):
         # T_0_1 (base_link to leg_front_r_1)
         T_0_1 = translation(0.07500, -0.0445, 0) @ rotation_x(1.57080) @ rotation_z(theta1)
 
-
         # T_1_2 (leg_front_r_1 to leg_front_r_2)
         T_1_2 = translation(0, 0, 0.039) @ rotation_y(-1.57080) @ rotation_z(theta2)
-
 
         # T_2_3 (leg_front_r_2 to leg_front_r_3)
         T_2_3 = translation(0, -0.0494, 0.0685) @ rotation_y(1.57080) @ rotation_z(theta3)
 
-
         # T_3_ee (leg_front_r_3 to end-effector)
         T_3_ee = translation(0.06231, -0.06216, 0.018)
 
-
         # TODO: Compute the final transformation. T_0_ee is a concatenation of the previous transformation matrices
         T_0_ee = T_0_1 @ T_1_2 @ T_2_3 @ T_3_ee
-
 
         # TODO: Extract the end-effector position. The end effector position is a 3x3 matrix (not in homogenous coordinates)
         p_0 = np.array([0], [0], [0], [1])
@@ -160,9 +142,9 @@ class InverseKinematics(Node):
 
 
         theta = np.array(initial_guess)
-        learning_rate = None # TODO: Set the learning rate
-        max_iterations = None # TODO: Set the maximum number of iterations
-        tolerance = None # TODO: Set the tolerance for the L1 norm of the error
+        learning_rate = 10 # TODO: Set the learning rate
+        max_iterations = 20 # TODO: Set the maximum number of iterations
+        tolerance = 1e-2 # TODO: Set the tolerance for the L1 norm of the error
 
 
         cost_l = []
@@ -183,7 +165,7 @@ class InverseKinematics(Node):
                 break
 
 
-        print(f'Cost: {cost_l}') # Use to debug to see if you cost function converges within max_iterations
+        # print(f'Cost: {cost_l}') # Use to debug to see if you cost function converges within max_iterations
 
         return theta
 
@@ -219,6 +201,7 @@ class InverseKinematics(Node):
 
         percent_t = t % 1
         return p1 + percent_t * (p2 - p1)
+    
 
     def ik_timer_callback(self):
         if self.joint_positions is not None:
@@ -230,6 +213,7 @@ class InverseKinematics(Node):
             # update the current time for the triangle interpolation
             ################################################################################################
             # TODO: Implement the time update
+            self.t += self.ik_timer_period
             ################################################################################################
            
             self.get_logger().info(f'Target EE: {target_ee}, Current EE: {current_ee}, Target Angles: {self.target_joint_positions}, Target Angles to EE: {self.forward_kinematics(*self.target_joint_positions)}, Current Angles: {self.joint_positions}')
