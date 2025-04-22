@@ -240,9 +240,8 @@ class InverseKinematics(Node):
         # From above:
         # self.ee_triangle_positions = [rf_ee_triangle_positions, lf_ee_triangle_positions, 
         # rb_ee_triangle_positions, lb_ee_triangle_positions]
-        t *= 5
-
-        print(t)
+        t *= 6
+        # print(t)
         
         if leg_index == 0:
             triangle_positions = self.ee_triangle_positions[0]
@@ -253,6 +252,21 @@ class InverseKinematics(Node):
         else:
             triangle_positions = self.ee_triangle_positions[3]
     
+        # if 0 <= t and t < 1/6:
+        #     i = 0
+        # if 1/6 <= t and t < 2/6:
+        #     i = 0
+        # if 2/6 <= t and t < 3/6:
+        #     i = 0
+        
+        # if 3/6 <= t and t < 4/6:
+        #     i = 0
+        # if 4/6 <= t and t < 5/6:
+        #     i = 0
+        # if 5/6 <= t and t < 1:
+        #     i = 0
+        
+
         t = t % 6
         i = int(t)
         p1 = triangle_positions[i % 6]
