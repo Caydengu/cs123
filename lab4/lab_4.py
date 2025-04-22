@@ -128,6 +128,7 @@ class InverseKinematics(Node):
         T_RF_3_ee = translation(0.06231, -0.06216, 0.01800)
         T_RF_0_ee = T_RF_0_1 @ T_RF_1_2 @ T_RF_2_3 @ T_RF_3_ee
         return T_RF_0_ee[:3, 3]
+    
 
     def fl_leg_fk(self, theta): # cayden
         ################################################################################################
