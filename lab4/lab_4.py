@@ -80,29 +80,35 @@ class InverseKinematics(Node):
         
         ## trotting
         # TODO: Implement each leg’s trajectory in the trotting gait.
+        
         rf_ee_offset = np.array([0.06, -0.09, 0])
         rf_ee_triangle_positions = np.array([
-            touch_down_position, stand_position_1, stand_position_2,
+             stand_position_2,
              stand_position_3, liftoff_position, mid_swing_position,
+             touch_down_position, stand_position_1,
             ]) + rf_ee_offset
         
         lf_ee_offset = np.array([0.06, 0.09, 0])
         lf_ee_triangle_positions = np.array([
-            stand_position_3, liftoff_position, mid_swing_position,
+            mid_swing_position,
             touch_down_position, stand_position_1,stand_position_2,
+             stand_position_3, liftoff_position,
             ]) + lf_ee_offset
         
         rb_ee_offset = np.array([-0.11, -0.09, 0])
         rb_ee_triangle_positions = np.array([
-            stand_position_3, liftoff_position, mid_swing_position,
-            touch_down_position, stand_position_1,stand_position_2,
+            mid_swing_position,
+            touch_down_position, stand_position_1, stand_position_2,
+             stand_position_3, liftoff_position, 
             ]) + rb_ee_offset
         
         lb_ee_offset = np.array([-0.11, 0.09, 0])
         lb_ee_triangle_positions = np.array([
-            touch_down_position, stand_position_1, stand_position_2,
-             stand_position_3, liftoff_position, mid_swing_position,
+            stand_position_2,
+            stand_position_3, liftoff_position, mid_swing_position,
+            touch_down_position, stand_position_1,
             ]) + lb_ee_offset
+    
 
 
         self.ee_triangle_positions = [rf_ee_triangle_positions, lf_ee_triangle_positions, rb_ee_triangle_positions, lb_ee_triangle_positions]
@@ -178,12 +184,15 @@ class InverseKinematics(Node):
 
         def cost_function(theta):
             current_position = leg_forward_kinematics(theta)
+            # print("Current position", current_position)
+            # print("Target EE", target_ee)
             ################################################################################################
             # TODO: [already done] paste lab 3 inverse kinematics here
             ################################################################################################
-            end_effector_position = self.forward_kinematics(*theta)
-
-            error = end_effector_position - target_ee
+            # end_effector_position = self.forward_kinematics(*theta)
+            # print("EE position", end_effector_position)
+            error = current_position - target_ee
+            # print("Error", error)
             l1_error = np.sum(np.abs(error))
             cost = np.sum(error ** 2)
             
@@ -216,7 +225,7 @@ class InverseKinematics(Node):
             # TODO: [already done] paste lab 3 inverse kinematics here
             ################################################################################################
             grad = gradient(theta)
-            theta -= learning_rate * grad
+            theta = theta - learning_rate * grad
             cost, l1_cur = cost_function(theta)
             cost_l.append(cost)
             if l1_cur < tolerance:
@@ -231,6 +240,10 @@ class InverseKinematics(Node):
         # From above:
         # self.ee_triangle_positions = [rf_ee_triangle_positions, lf_ee_triangle_positions, 
         # rb_ee_triangle_positions, lb_ee_triangle_positions]
+        t *= 5
+
+        print(t)
+        
         if leg_index == 0:
             triangle_positions = self.ee_triangle_positions[0]
         elif leg_index == 1:
@@ -281,6 +294,7 @@ class InverseKinematics(Node):
         if self.joint_positions is not None:
             target_ee, self.target_joint_positions = self.get_target_joint_positions()
             current_ee = self.forward_kinematics(self.joint_positions)
+
 
             self.get_logger().info(
                 f'Target EE: {target_ee}, \
