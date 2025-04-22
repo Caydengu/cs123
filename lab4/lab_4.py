@@ -82,31 +82,27 @@ class InverseKinematics(Node):
         # TODO: Implement each leg’s trajectory in the trotting gait.
         rf_ee_offset = np.array([0.06, -0.09, 0])
         rf_ee_triangle_positions = np.array([
-            ################################################################################################
-            # TODO: Implement the trotting gait
-            ################################################################################################
-        ]) + rf_ee_offset
+            touch_down_position, stand_position_1, stand_position_2,
+             stand_position_3, liftoff_position, mid_swing_position,
+            ]) + rf_ee_offset
         
         lf_ee_offset = np.array([0.06, 0.09, 0])
         lf_ee_triangle_positions = np.array([
-            ################################################################################################
-            # TODO: Implement the trotting gait
-            ################################################################################################
-        ]) + lf_ee_offset
+            stand_position_3, liftoff_position, mid_swing_position,
+            touch_down_position, stand_position_1,stand_position_2,
+            ]) + lf_ee_offset
         
         rb_ee_offset = np.array([-0.11, -0.09, 0])
         rb_ee_triangle_positions = np.array([
-            ################################################################################################
-            # TODO: Implement the trotting gait
-            ################################################################################################
-        ]) + rb_ee_offset
+            stand_position_3, liftoff_position, mid_swing_position,
+            touch_down_position, stand_position_1,stand_position_2,
+            ]) + rb_ee_offset
         
         lb_ee_offset = np.array([-0.11, 0.09, 0])
         lb_ee_triangle_positions = np.array([
-            ################################################################################################
-            # TODO: Implement the trotting gait
-            ################################################################################################
-        ]) + lb_ee_offset
+            touch_down_position, stand_position_1, stand_position_2,
+             stand_position_3, liftoff_position, mid_swing_position,
+            ]) + lb_ee_offset
 
 
         self.ee_triangle_positions = [rf_ee_triangle_positions, lf_ee_triangle_positions, rb_ee_triangle_positions, lb_ee_triangle_positions]
@@ -124,6 +120,7 @@ class InverseKinematics(Node):
 
 
     def fr_leg_fk(self, theta):
+        #correct
         # Already implemented in Lab 2
         T_RF_0_1 = translation(0.07500, -0.08350, 0) @ rotation_x(1.57080) @ rotation_z(theta[0])
         T_RF_1_2 = rotation_y(-1.57080) @ rotation_z(theta[1])
@@ -132,23 +129,35 @@ class InverseKinematics(Node):
         T_RF_0_ee = T_RF_0_1 @ T_RF_1_2 @ T_RF_2_3 @ T_RF_3_ee
         return T_RF_0_ee[:3, 3]
 
-    def fl_leg_fk(self, theta):
+    def fl_leg_fk(self, theta): # cayden
         ################################################################################################
         # TODO: implement forward kinematics here
         ################################################################################################
-        return
+        T_RF_0_1 = translation(0.07500, 0.08350, 0) @ rotation_x(-1.57080) @ rotation_z(theta[0])  # correct
+        T_RF_1_2 = rotation_y(-1.57080) @ rotation_z(theta[1])  
+        T_RF_2_3 = translation(0, 0.04940, 0.06850) @ rotation_y(1.57080) @ rotation_z(theta[2])
+        T_RF_3_ee = translation(0.06231, 0.06216, 0.01800)
+        T_RF_0_ee = T_RF_0_1 @ T_RF_1_2 @ T_RF_2_3 @ T_RF_3_ee
+        return T_RF_0_ee[:3, 3]
 
-    def br_leg_fk(self, theta):
+    def br_leg_fk(self, theta): # vania
+        # correct
         ################################################################################################
-        # TODO: implement forward kinematics here
+        T_RF_0_1 = translation(-0.07500, -0.0725, 0) @ rotation_x(1.57080) @ rotation_z(theta[0])
+        T_RF_1_2 = rotation_y(-1.57080) @ rotation_z(theta[1])
+        T_RF_2_3 = translation(0, -0.04940, 0.06850) @ rotation_y(1.57080) @ rotation_z(theta[2])
+        T_RF_3_ee = translation(0.06231, -0.06216, 0.01800)
+        T_RF_0_ee = T_RF_0_1 @ T_RF_1_2 @ T_RF_2_3 @ T_RF_3_ee
+        return T_RF_0_ee[:3, 3]
         ################################################################################################
-        return
 
-    def bl_leg_fk(self, theta):
-        ################################################################################################
-        # TODO: implement forward kinematics here
-        ################################################################################################
-        return
+    def bl_leg_fk(self, theta):# Hongyue #######################################################################
+        T_RF_0_1 = translation(-0.07500, 0.0725, 0) @ rotation_x(-1.57080) @ rotation_z(theta[0])
+        T_RF_1_2 = rotation_y(-1.57080) @ rotation_z(theta[1])
+        T_RF_2_3 = translation(0, 0.04940, 0.06850) @ rotation_y(1.57080) @ rotation_z(theta[2])
+        T_RF_3_ee = translation(0.06231, 0.06216, 0.01800)
+        T_RF_0_ee = T_RF_0_1 @ T_RF_1_2 @ T_RF_2_3 @ T_RF_3_ee
+        return T_RF_0_ee[:3, 3]
 
     def forward_kinematics(self, theta):
         return np.concatenate([self.fk_functions[i](theta[3*i: 3*i+3]) for i in range(4)])
@@ -171,35 +180,71 @@ class InverseKinematics(Node):
             ################################################################################################
             # TODO: [already done] paste lab 3 inverse kinematics here
             ################################################################################################
-            return None, None
+            end_effector_position = self.forward_kinematics(*theta)
+
+            error = end_effector_position - target_ee
+            l1_error = np.sum(np.abs(error))
+            cost = np.sum(error ** 2)
+            
+            return cost, l1_error
 
         def gradient(theta, epsilon=1e-3):
             grad = np.zeros(3)
             ################################################################################################
             # TODO: [already done] paste lab 3 inverse kinematics here
             ################################################################################################
+            grad = np.zeros(len(theta))
+            for i in range(len(theta)):
+                theta_plus = np.copy(theta)
+                theta_plus[i] += epsilon
+                cost_plus, _ = cost_function(theta_plus)
+                theta_minus = np.copy(theta)
+                theta_minus[i] -= epsilon
+                cost_minus, _ = cost_function(theta_minus)
+                grad[i] = (cost_plus - cost_minus) / (2 * epsilon)
             return grad
 
         theta = np.array(initial_guess)
-        learning_rate = None # TODO:[already done] paste lab 3 inverse kinematics here
-        max_iterations = None # TODO: [already done] paste lab 3 inverse kinematics here
-        tolerance = None # TODO: [already done] paste lab 3 inverse kinematics here
+        learning_rate = 10 # TODO:[already done] paste lab 3 inverse kinematics here
+        max_iterations = 20 # TODO: [already done] paste lab 3 inverse kinematics here
+        tolerance = 1e-2 # TODO: [already done] paste lab 3 inverse kinematics here
 
         cost_l = []
         for _ in range(max_iterations):
             ################################################################################################
             # TODO: [already done] paste lab 3 inverse kinematics here
             ################################################################################################
-            continue
-
+            grad = gradient(theta)
+            theta -= learning_rate * grad
+            cost, l1_cur = cost_function(theta)
+            cost_l.append(cost)
+            if l1_cur < tolerance:
+                break
+            
         return theta
 
     def interpolate_triangle(self, t, leg_index):
         ################################################################################################
         # TODO: implement interpolation for all 4 legs here
         ################################################################################################
-        
-        return
+        # From above:
+        # self.ee_triangle_positions = [rf_ee_triangle_positions, lf_ee_triangle_positions, 
+        # rb_ee_triangle_positions, lb_ee_triangle_positions]
+        if leg_index == 0:
+            triangle_positions = self.ee_triangle_positions[0]
+        elif leg_index == 1:
+            triangle_positions = self.ee_triangle_positions[1]
+        elif leg_index == 2:
+            triangle_positions = self.ee_triangle_positions[2]
+        else:
+            triangle_positions = self.ee_triangle_positions[3]
+    
+        t = t % 6
+        i = int(t)
+        p1 = triangle_positions[i % 6]
+        p2 = triangle_positions[(i + 1) % 6]
+        alpha = t % 1
+        return p1 + alpha * (p2 - p1)
 
     def cache_target_joint_positions(self):
         # Calculate and store the target joint positions for a cycle and all 4 legs
