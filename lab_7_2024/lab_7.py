@@ -5,8 +5,10 @@ from geometry_msgs.msg import Twist
 from vision_msgs.msg import Detection2DArray
 import numpy as np
 
-IMAGE_WIDTH = 1400
 # TODO: Add your new constants here
+IMAGE_WIDTH = 1400
+CENTER = 662
+DIAMETER = 638
 
 TIMEOUT = 2 #TODO threshold in timer_callback
 SEARCH_YAW_VEL = 0.5 #TODO searching constant
@@ -57,7 +59,8 @@ class StateMachineNode(Node):
         candidate, dist_min  = None, float('inf')
         for i, detection in enumerate(msg.detections):
             x = detection.bbox.center.position.x
-            x = (x / IMAGE_WIDTH - 0.5) * 2
+            # x = (x / IMAGE_WIDTH - 0.5) * 2
+            x = (x - CENTER) / (DIAMETER / 2)
             
             if abs(x - self.last_tracked_object_x) < dist_min:
                 dist_min = abs(x - self.last_tracked_object_x)
