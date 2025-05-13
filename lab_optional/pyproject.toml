@@ -1,8 +1,0 @@
-[project]
-name = "implicit"
-version = "0.1.0"
-dependencies = [
-    "torch",
-    "numpy",
-    "pandas"
-]
