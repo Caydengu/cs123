@@ -4,7 +4,8 @@ from std_msgs.msg import String
 import sounddevice as sd
 from openai import OpenAI
 
-client = OpenAI(api_key='TODO')
+client = OpenAI(api_key='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')
+
 import numpy as np
 import time
 import io
@@ -30,8 +31,16 @@ class CommandLinePublisher(Node):
     # message is a string that contains the user query. You can publish it using the publisher_ and its publish method
     def publish_message(self, message):
         # Create a String message and publish it
-        pass
+
         # Copy implementation from the command_line_publisher.py script
+        msg = String()
+        msg.data = message
+
+        # Publish the message to the 'user_query_topic'
+        self.publisher_.publish(msg)
+
+        # Log the published message
+        self.get_logger().info(f"Published message: {message}")
             
     def transcribe_audio_with_whisper(self, filename, sample_rate=16000):
         try:
@@ -65,7 +74,7 @@ def audio_to_wav(audio_data, sample_rate=16000):
     wav_io.seek(0)
     return wav_io
 
-def main(args=None):
+def main_one_try(args=None):
     rclpy.init(args=args)
 
     # Create the command line publisher node
@@ -111,6 +120,59 @@ def main(args=None):
     # Clean up and shutdown
     command_publisher.destroy_node()
     rclpy.shutdown()
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    # Create the command line publisher node
+    command_publisher = CommandLinePublisher()
+
+    # Set up the stream and audio processing
+    print("Listening for speech every 0.9 seconds. Say 'exit' to stop.")
+    command_publisher.get_logger().info("Starting recording.")
+
+    try:
+        while rclpy.ok():
+            duration = 5.0 # 5.0
+            audio_data = record_audio(duration=duration)
+
+            # Save the recorded audio to a WAV file
+            wav_io = audio_to_wav(audio_data)
+            filename = '/home/pi/pupper_llm/pupper_llm/simple_scripts/test_audio.wav'
+            with open(filename, 'wb') as f:
+                f.write(wav_io.read())
+            command_publisher.get_logger().info("Audio saved to test_audio.wav")
+
+            # Transcribe audio using Whisper API
+            t1 = time.time()
+            user_input = command_publisher.transcribe_audio_with_whisper(filename)
+            t2 = time.time()
+
+            command_publisher.get_logger().info(f"Time taken: {t2 - t1}")
+
+            if user_input:
+                # If the user said 'exit', stop the loop
+                if user_input.lower() == 'exit':
+                    print("Exiting the publisher.")
+                    break
+
+                # Publish the recognized text
+                command_publisher.publish_message(user_input)
+
+            # Allow ROS2 to process the message
+            rclpy.spin_once(command_publisher, timeout_sec=0.1)
+
+            # Delay for a short period before next recording
+            time.sleep(0.9)
+
+    except KeyboardInterrupt:
+        print("Interrupted by user. Exiting...")
+
+    # Clean up and shutdown
+    command_publisher.destroy_node()
+    rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

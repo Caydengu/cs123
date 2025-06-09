@@ -1,0 +1,11 @@
+cd ~/pupper_llm/launch
+ros2 launch launch.py
+
+cd ~/pupper_llm/pupper_llm/Robot_Commands
+python3 command_line_publisher.py
+
+cd ~/pupper_llm/pupper_llm/simple_scripts
+python3 whisper_ping.py
+
+cd ~/pupper_llm/pupper_llm/karel
+python3 vision_karel.py 

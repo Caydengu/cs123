@@ -4,7 +4,7 @@ from std_msgs.msg import String
 import pyttsx3
 from openai import OpenAI
 
-client = OpenAI(api_key='TODO')
+client = OpenAI(api_key='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')
 
 class GPT4ConversationNode(Node):
     def __init__(self):

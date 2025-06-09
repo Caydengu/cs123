@@ -99,22 +99,20 @@ def generate_launch_description():
         ],
     )
 
+    camera_node = Node(
+        package="camera_ros",
+        executable="camera_node",
+        output="both",
+        parameters=[{"format": "RGB888", "width": 1400, "height": 1050}],
+    )
+
     nodes = [
         robot_state_publisher,
-        # imu_sensor_broadcaster_spawner,
         control_node,
         robot_controller_spawner,
         joint_state_broadcaster_spawner,
         joy_node,
         teleop_twist_joy_node,
+        camera_node,
     ]
-
-    # nodes = [
-    #     robot_state_publisher,
-    #     # imu_sensor_broadcaster_spawner,
-    #     control_node,
-    #     joint_state_broadcaster_spawner,
-    #     joy_node,
-    #     teleop_twist_joy_node,
-    # ]
     return LaunchDescription(nodes)

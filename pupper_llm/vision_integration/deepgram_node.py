@@ -3,6 +3,12 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from deepgram import DeepgramClient, LiveTranscriptionEvents, LiveOptions, Microphone
 
+from deepgram import Deepgram
+
+dg_client = Deepgram("your_actual_deepgram_api_key_here")
+
+
+
 class DeepgramNode(Node):
     def __init__(self):
         super().__init__('deepgram_node')
@@ -34,8 +40,8 @@ class DeepgramNode(Node):
         self.dg_connection.start(options)
 
         # Create and start the microphone
-        # self.microphone = Microphone(self.dg_connection.send)
-        self.microphone = Microphone(self.dg_connection.send, rate=48000, input_device_index=1, channels=1)
+        self.microphone = Microphone(self.dg_connection.send)
+      #  self.microphone = Microphone(self.dg_connection.send, rate=48000, input_device_index=1, channels=1)
         self.microphone.start()
 
     def create_callback(self, func):

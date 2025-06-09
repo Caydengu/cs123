@@ -5,11 +5,32 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import simpleaudio as sa
 import pygame
+from gpiozero import Servo
 
 class KarelPupper:
     def start():
         if not rclpy.ok():
             rclpy.init()
+
+    def fire(angle):
+        def angle_to_value(angle):
+            # Clamp angle to 0-180
+            angle = max(0, min(180, angle))
+            # Map 0-180 to -1 to +1
+            return (angle / 90.0) - 1
+
+        servo_r = Servo(26, min_pulse_width=0.000500, max_pulse_width=0.005000)
+
+        try:
+            while True:
+                r_angle = float(input("Enter RIGHT servo angle (0-180): "))
+                r_value = angle_to_value(r_angle)
+                servo_r.value = r_value
+                print(f"RIGHT servo to {r_angle}° ({r_value:.2f})")
+                sleep(0.5)
+        except KeyboardInterrupt:
+            print("\nExiting and releasing servos...")
+            servo_r.detach()
 
     def __init__(self):
         if not rclpy.ok():
@@ -45,7 +66,7 @@ class KarelPupper:
         self.publisher.publish(move_cmd)
         rclpy.spin_once(self.node, timeout_sec=1.0)
         self.node.get_logger().info('Turn right...')
-#        time.sleep(0.5)
+        time.sleep(0.5)
         self.stop()
 
     def bark(self):
@@ -54,10 +75,10 @@ class KarelPupper:
         bark_sound = pygame.mixer.Sound('/home/pi/pupper_llm/sounds/dog_bark.wav')
         bark_sound.play()
         
-#        time.sleep(0.5)
+        time.sleep(0.5)
         self.stop()
 
-
+ 
     def stop(self):
         self.node.get_logger().info('Stopping...')
         move_cmd = Twist()
