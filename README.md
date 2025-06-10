@@ -5,6 +5,8 @@
 ### [Demo Day Presentation](https://docs.google.com/presentation/d/1naUFeP-jD-U5F46eKh-vFS87Ycf5iTFu5LH2e7aRoZ8/edit?usp=sharing)
 ### [Demo Video](https://drive.google.com/file/d/1iBU_0Kyx-37Vr86rlRLbeELQ8y5SHvHe/view?usp=sharing)
 
+<img width="719" alt="Screenshot 2025-06-09 at 9 12 57 AM" src="https://github.com/user-attachments/assets/87f82bbf-3b89-4c8b-a2fa-6e4a1a570ff3" />
+
 ## Project Overview
 Our project explores the integration of human-robot communication and environmental interaction 
 through the development of a voice-controlled targeting and shooting system using Pupper. 
