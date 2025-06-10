@@ -2,6 +2,9 @@
 ### CS 123 Spring 2025 Group 4
 ### Vania Chow, Cayden Gu, Hongyue Li, and Benji Warburton
 
+### [Demo Day Presentation](https://docs.google.com/presentation/d/1naUFeP-jD-U5F46eKh-vFS87Ycf5iTFu5LH2e7aRoZ8/edit?usp=sharing)
+### [Demo Video](https://drive.google.com/file/d/1iBU_0Kyx-37Vr86rlRLbeELQ8y5SHvHe/view?usp=sharing)
+
 ## Project Overview
 Our project explores the integration of human-robot communication and environmental interaction 
 through the development of a voice-controlled targeting and shooting system using Pupper. 
